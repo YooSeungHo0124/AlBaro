@@ -1,0 +1,106 @@
+pipeline {
+    agent any
+
+    environment {
+        EC2_IP = 'i12b105.p.ssafy.io'
+        SSH_KEY = 'C:/Users/SSAFY/Desktop/I12B105T.pem'
+        PROJECT_PATH = '/var/jenkins_home/workspace/jenkinsTest/jenkins'  // Jenkins 컨테이너 내부 절대 경로
+        GIT_REPO_URL = 'https://lab.ssafy.com/s12-webmobile1-sub1/S12P11B105.git'
+        GIT_BRANCH = 'develop'
+        DOCKER_COMPOSE_PATH = '/usr/local/bin/docker-compose'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: "${GIT_REPO_URL}", branch: "${GIT_BRANCH}", credentialsId: 'Gitlab'
+            }
+        }
+
+
+        stage('Build') {
+            steps {
+                script {
+                    // backend 디렉토리로 이동하여 gradlew 실행
+                    dir('backend') {
+                        // gradlew 파일에 실행 권한 부여
+                        sh 'chmod +x gradlew'
+                        
+                        // Gradle 빌드 수행
+                        sh './gradlew build -x test --no-daemon'
+
+                         // JAR 파일 존재 여부 확인
+                        sh 'ls -l build/libs || echo "JAR 파일이 존재하지 않습니다!"'
+                    }
+                }
+            }
+        }        
+
+        stage('.env 파일 생성') {
+            steps {
+                withCredentials([string(credentialsId: 'NEXT_PUBLIC_KAKAO_KEY', variable: 'NEXT_PUBLIC_KAKAO_KEY')]) {
+                    script {
+                        sh '''
+                        echo "NEXT_PUBLIC_KAKAO_KEY=$NEXT_PUBLIC_KAKAO_KEY" > /var/jenkins_home/workspace/jenkinsTest/jenkins/.env
+                        cp /var/jenkins_home/workspace/jenkinsTest/jenkins/.env /var/jenkins_home/workspace/jenkinsTest/frontend/.env
+                        echo "NEXT_PUBLIC_API_URL=https://i12b105.p.ssafy.io" >> /var/jenkins_home/workspace/jenkinsTest/frontend/.env
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('기존 컨테이너 중지 및 제거') {
+            steps {
+                script {
+                    sh '''
+                    cd /var/jenkins_home/workspace/jenkinsTest/jenkins
+                    $DOCKER_COMPOSE_PATH down
+                    '''
+                }
+            }
+        }
+
+        stage('컨테이너 빌드 및 시작') {
+            steps {
+                script {
+                    sh '''
+                    cd /var/jenkins_home/workspace/jenkinsTest/jenkins
+                    $DOCKER_COMPOSE_PATH up --build -d
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Nginx') {
+            steps {
+                script {
+                    sh '''
+                    cd /var/jenkins_home/workspace/jenkinsTest/jenkins
+                    $DOCKER_COMPOSE_PATH up -d nginx
+                    '''
+                }
+            }
+        }
+
+        
+        stage('Deploy') {
+            steps {
+                // Docker 네트워크 생성 확인
+                sh 'docker network ls'
+                // 컨테이너 상태 확인
+                sh 'docker ps'
+            }
+        }
+    
+    }
+
+    post {
+        success {
+            echo '빌드 및 배포가 성공적으로 완료되었습니다! :)'
+        }
+        failure {
+            echo '빌드 또는 배포에 실패했습니다!  ㅡ.ㅡ'
+        }
+    }
+}
