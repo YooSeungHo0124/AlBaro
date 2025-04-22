@@ -21,7 +21,7 @@
 
 | **유승호** [🔗](https://github.com/YooSeungHo0124) | **우연주** [🔗](https://github.com/WooYeonJu) | **류현웅** [🔗](https://github.com/RomanticBear) |
 |------------------|-------------------------------|-------------------------------|
-| <img src="image/유승호.jpg" width="120"/><img src="image/구민석.jpg" width="120"/> | <img src="image/우연주.jpg" width="120"/> | <img src="image/류현웅.jpg" width="120"/> |
+| <img src="image/유승호.jpg" width="120"/> | <img src="image/우연주.jpg" width="120"/> | <img src="image/류현웅.jpg" width="120"/> |
 
 | **이민상** [🔗](https://github.com/Minsang0130) | **구민석** [🔗](https://github.com/KOOMINSEOK9) | **유정현** [🔗](https://github.com/Junghyun58) |
 |------------------|-------------------------------|-------------------------------|
