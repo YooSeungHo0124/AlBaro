@@ -42,6 +42,15 @@
 
 ## 기술 스택
 
+### Infrastructure
+- AWS EC2
+- Docker
+- Jenkins
+- MySQL
+- Nginx
+- MySQL
+- Redis
+
 ### Frontend
 - React 18.3.1
 - TypeScript
@@ -54,11 +63,7 @@
 - Spring Boot 3.4.1
 - Spring Security 6
 
-### Infrastructure
-- AWS EC2
-- Docker
-- Jenkins
-- MySQL
+
 
 ---
 
